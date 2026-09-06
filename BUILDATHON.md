@@ -14,7 +14,7 @@ Reviewers and coding agents need to decide what a change can break before they r
 
 ## Architecture and main workflow
 
-~~~text
+```text
 Reviewer or API client
   -> GraphGuard CLI / FastAPI UI
   -> Entire Graph impact JSON
@@ -22,7 +22,7 @@ Reviewer or API client
   -> saved local report-*.json artifact
   -> optional Unity Catalog Volume staging
   -> Databricks notebook: Delta tables + MLflow run metrics
-~~~
+```
 
 The local JSON report is the system of record for the demo. No LLM assigns a risk tier. Databricks is an optional analytics and demonstration layer; it does not replace the local decision workflow.
 
@@ -56,7 +56,7 @@ In this checkout, the seven reviewed Entire lifecycle hooks are trusted and Enti
 
 ## Setup, run, and test instructions
 
-~~~bash
+```bash
 # From the repository root.
 python3 -m pip install -e "./graphguard[dev]"
 entire plugin install graph
@@ -69,7 +69,7 @@ python3 -m graphguard.cli analyze charge --repo graphguard/fixtures/demo-repo
 
 # Start the local product.
 python3 -m uvicorn graphguard.web.app:app --host 127.0.0.1 --port 8765
-~~~
+```
 
 Open http://127.0.0.1:8765/, choose a repository and symbol, then inspect the risk tier, evidence, and ranked tests. A successful CLI or UI analysis saves a local report-*.json file under graphguard/data/; those generated artifacts are intentionally not committed.
 
@@ -92,7 +92,7 @@ The demo reports are generated from the repository's synthetic graphguard/fixtur
 
 Generate a Databricks personal access token in the workspace and keep it only in the terminal session. Never commit or paste it into this repository.
 
-~~~bash
+```bash
 python3 -m pip install -e "./graphguard[databricks]"
 export DATABRICKS_HOST="https://dbc-ddd40b1f-5e3d.cloud.databricks.com"
 export DATABRICKS_TOKEN="<personal-access-token>"
@@ -102,7 +102,7 @@ export DATABRICKS_VOLUME="input"
 
 python3 -m graphguard.cli analyze charge --repo graphguard/fixtures/demo-repo
 python3 -m graphguard.cli export-databricks
-~~~
+```
 
 Then import graphguard/notebooks/databricks_export.py into the same Databricks workspace and run it from a Databricks notebook with available serverless compute. Verify the four Delta tables, the MLflow metrics, and the Volume file list. The resource provisioning and local staging path are verified; the final credentialed upload and notebook run must be demonstrated before claiming a complete Databricks integration.
 
