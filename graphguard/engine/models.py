@@ -15,6 +15,8 @@ class NormalizedFacts:
     symbol: str
     is_public: bool
     direct_callers: int = 0
+    raw_direct_callers: int = 0
+    raw_transitive_callers: int = 0
     transitive_callers: int = 0
     reachable_tests: int = 0
     cochange_files: int = 0
