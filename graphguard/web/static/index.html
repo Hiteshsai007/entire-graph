@@ -118,7 +118,11 @@
                 const tierEl = byId('res-tier'); const partial = data.facts.analysis_status === 'partial';
                 tierEl.textContent = partial ? `${data.tier} · VERIFY (${data.rule_id})` : `${data.tier} RISK (${data.rule_id})`; tierEl.className = `tier tier-${data.tier}`;
                 byId('res-reason').textContent = data.reason;
-                if (partial) showMessage(warningEl, `Partial graph analysis: ${data.facts.analysis_limitations.join('; ')}. Verify relationship counts and suggested tests in source.`);
+                if (data.demo_notice) {
+                    showMessage(warningEl, data.demo_notice);
+                } else if (partial) {
+                    showMessage(warningEl, `Partial graph analysis: ${data.facts.analysis_limitations.join('; ')}. Verify relationship counts and suggested tests in source.`);
+                }
                 renderEvidence(data.evidence || []); renderTests(data.ranked_tests || []); resultsEl.style.display = 'block'; resultsEl.scrollIntoView({ behavior:'smooth', block:'start' });
             } catch (error) { showMessage(errorEl, error.message); }
             finally { btn.disabled = false; btn.textContent = 'Analyze change risk'; }
