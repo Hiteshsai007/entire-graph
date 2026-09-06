@@ -12,14 +12,11 @@ Evidence-backed change intelligence powered by [Entire Graph](https://github.com
 ## Quick Start
 
 ```bash
-cd graphguard
-pip install -e ".[dev]"
-python -m pytest -q
-python -m graphguard.cli analyze --repo fixtures/demo-repo --symbol charge
-python -m graphguard.cli serve
+# Run from the repository root. The dev extra installs pytest.
+python -m pip install -e "./graphguard[dev]"
+python -m pytest -q graphguard/tests
+python -m graphguard.cli analyze charge --repo graphguard/fixtures/demo-repo
 ```
-
-Open http://127.0.0.1:8765
 
 ## Architecture
 

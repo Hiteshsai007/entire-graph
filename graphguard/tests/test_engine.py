@@ -21,6 +21,8 @@ def test_charge_high_risk():
     assert facts.transitive_callers == 1
     assert facts.raw_direct_callers == 4
     assert facts.raw_transitive_callers == 3
+    assert facts.test_depths["test_charge_success"] == 1
+    assert facts.test_vias["test_process_order_success"] == "process_order"
     
     tier, rule_id, reason = classify(facts)
     assert tier == "HIGH"
@@ -29,6 +31,8 @@ def test_charge_high_risk():
     ranked = rank_tests(facts, tier)
     assert len(ranked) > 0
     assert ranked[0].score == 100
+    depth_two = next(test for test in ranked if test.test_name == "test_process_order_success")
+    assert depth_two.path == "test_process_order_success --CALLS--> process_order --CALLS--> charge"
     
     evidence = build_evidence(facts, tier, rule_id, reason, ["entire graph impact --repo . --symbol charge"])
     assert len(evidence) == 2
@@ -55,6 +59,7 @@ def test_rank_tests_breaks_equal_scores_by_test_name():
         symbol="charge",
         is_public=True,
         test_names=["test_zebra", "test_alpha"],
+        test_depths={"test_zebra": 1, "test_alpha": 1},
         direct_caller_names=["test_zebra", "test_alpha"],
     )
 

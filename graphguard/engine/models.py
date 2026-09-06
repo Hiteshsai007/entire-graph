@@ -23,6 +23,8 @@ class NormalizedFacts:
     direct_caller_names: list[str] = field(default_factory=list)
     transitive_caller_names: list[str] = field(default_factory=list)
     test_names: list[str] = field(default_factory=list)
+    test_depths: dict[str, int] = field(default_factory=dict)
+    test_vias: dict[str, str] = field(default_factory=dict)
     cochange_file_names: list[str] = field(default_factory=list)
     callees: list[str] = field(default_factory=list)
     type_consumers: list[str] = field(default_factory=list)
@@ -53,7 +55,7 @@ class RankedTest:
     test_name: str
     score: int
     reason: str
-    path: str  # e.g. "charge ←CALLS process_order ←TESTED_BY test_processor"
+    path: str  # e.g. "test_processor --CALLS--> process_order --CALLS--> charge"
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)

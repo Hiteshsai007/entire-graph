@@ -1,51 +1,18 @@
 """Core runner that ties GraphGuard together."""
 
-import json
 import subprocess
-from pathlib import Path
+import sys
 from graphguard.engine.models import AnalysisReport, VerifyOutcome
 from graphguard.engine.normalize import normalize_impact
 from graphguard.engine.risk import classify
 from graphguard.engine.rank import rank_tests
 from graphguard.engine.evidence import build_evidence
+from graphguard.runner.graph_cli import GraphCLI
 
 def run_impact(repo: str, symbol: str) -> tuple[dict, str]:
     """Run entire-graph impact and return parsed JSON and the raw CLI command."""
-    # Assuming entire-graph is in the PATH or we use the specific path for the buildathon
-    eg_bin = "/Users/tarun.n/BTW/entire-graph/entire-graph"
-    cmd = [eg_bin, "impact", "--repo", repo, "--symbol", symbol, "--depth", "2", "--format", "json"]
-    cmd_str = " ".join(cmd)
-    
-    result = subprocess.run(cmd, capture_output=True, text=True)
-    
-    # We might get multiple JSON objects if the symbol is ambiguous, 
-    # but for GraphGuard demo we assume unambiguous or we pick the first valid output.
-    # The output might have a warning on stderr and JSON on stdout.
-    
-    if result.returncode != 0:
-        # If it failed, try to parse what we have, otherwise raise
-        try:
-            return json.loads(result.stdout), cmd_str
-        except json.JSONDecodeError:
-            raise RuntimeError(f"entire-graph failed: {result.stderr}")
-            
-    try:
-        # If there are multiple lines (ndjson), take the last one or the one that has "focus"
-        lines = result.stdout.strip().split("\n")
-        data = None
-        for line in lines:
-            try:
-                parsed = json.loads(line)
-                if "focus" in parsed:
-                    data = parsed
-                    break
-            except:
-                pass
-        if data:
-            return data, cmd_str
-        return json.loads(result.stdout), cmd_str
-    except json.JSONDecodeError as e:
-        raise RuntimeError(f"Failed to parse entire-graph output: {e}\nSTDOUT: {result.stdout}")
+    result = GraphCLI(repo).impact(symbol)
+    return result.data, result.command_text
 
 def run_verify(repo: str, tests: list[str]) -> bool:
     """Run pytest on the given tests. Returns True if passed, False otherwise."""
@@ -53,7 +20,7 @@ def run_verify(repo: str, tests: list[str]) -> bool:
         return True
     
     # We run pytest on the specific tests inside the repo
-    cmd = ["python3", "-m", "pytest"]
+    cmd = [sys.executable, "-m", "pytest"]
     
     # Instead of passing specific test nodes (which requires exact paths),
     # we just pass the test names using -k for the demo.

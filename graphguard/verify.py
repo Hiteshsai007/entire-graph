@@ -4,6 +4,7 @@ Baseline tests -> Wait for edit/Perform edit -> Post-edit tests -> Result
 """
 
 import subprocess
+import sys
 import time
 from typing import Callable
 from graphguard.engine.models import RankedTest, VerifyOutcome
@@ -16,7 +17,7 @@ def verify_symbol_changes(repo: str, tests: list[RankedTest], edit_callback: Cal
     if not test_names:
         return VerifyOutcome(status="No tests to run")
         
-    cmd = ["python3", "-m", "pytest", "-v"]
+    cmd = [sys.executable, "-m", "pytest", "-v"]
     k_arg = " or ".join(test_names)
     cmd.extend(["-k", k_arg])
     

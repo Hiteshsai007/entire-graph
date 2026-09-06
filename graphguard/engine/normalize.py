@@ -44,6 +44,14 @@ def normalize_impact(raw: dict, symbol: str) -> NormalizedFacts:
         if is_test:
             if name not in facts.test_names:
                 facts.test_names.append(name)
+            previous_depth = facts.test_depths.get(name)
+            if previous_depth is None or depth < previous_depth:
+                facts.test_depths[name] = depth
+                via = entry.get("via")
+                if via:
+                    facts.test_vias[name] = via
+                else:
+                    facts.test_vias.pop(name, None)
 
     # Calculate reachable tests as the number of unique test files
     test_files = set()
