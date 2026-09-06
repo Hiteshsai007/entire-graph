@@ -35,6 +35,13 @@ Entire Graph v0.4.0 is installed and activated for this checkout. The following 
 - A live analysis of **charge** classified it as **HIGH (H1)**, ranked five reachable tests, and saved a report-*.json artifact. The FastAPI endpoint returned the same graph-backed report and persisted an artifact.
 - python3 -m pytest -q graphguard/tests is the regression suite for risk classification, partial graph evidence, the browser UI, report persistence, and Databricks staging.
 
+Final semantic-diff evidence was recorded with `entire graph diff --base
+origin/main --head HEAD --json`. It identifies the changed CLI and FastAPI
+entry points, the new persistence and export tests, the Databricks notebook
+path update, and this submission documentation. The only warning is the
+pre-existing oversized generated PostgreSQL parser file; it is outside the
+GraphGuard change set and its dependent references were not counted.
+
 Graph results are evidence rather than an oracle. GraphGuard does not present dynamic dispatch, reflection, generated code, or a machine-readable partial failure as a complete relationship fact.
 
 ## Noon Curveball: what changed and how we adapted
