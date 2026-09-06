@@ -34,8 +34,8 @@ _(To be filled after noon constraint)_
 
 ## Checkpoints
 
-1. **Checkpoint 1:** Plan committed. _(this commit)_
-2. **Checkpoint 2:** _(pre-noon freeze)_
+1. **Checkpoint 1:** Plan committed.
+2. **Checkpoint 2:** What works: analyze/verify/UI/tests. Exact demo command. Fixture outcomes actually seen (including Contradicted yes/no). Databricks not started. Do not add features after this commit.
 3. **Checkpoint 3:** _(post-curveball)_
 4. **Checkpoint 4:** _(final)_
 
