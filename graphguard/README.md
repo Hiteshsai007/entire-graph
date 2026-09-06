@@ -47,13 +47,17 @@ workspace destination outside source control:
 python -m pip install -e "./graphguard[databricks]"
 export DATABRICKS_HOST="https://<workspace>"
 export DATABRICKS_TOKEN="<token>"
-export DATABRICKS_CATALOG="<catalog>"
+export DATABRICKS_CATALOG="workspace"
 export DATABRICKS_SCHEMA="graphguard"
-export DATABRICKS_VOLUME="graphguard_input"
+export DATABRICKS_VOLUME="input"
+
+# Analyze first (this saves report-*.json under graphguard/data), then stage it.
+python -m graphguard.cli export-databricks
 ```
 
-`push_to_databricks()` raises a typed configuration error when these values are
-missing, so local analysis continues to work without Databricks.
+`export-databricks` raises a typed configuration error when these values are
+missing, so local analysis continues to work without Databricks. The notebook
+reads staged artifacts from `/Volumes/workspace/graphguard/input/graphguard/reports`.
 
 ## Limitations
 

@@ -11,7 +11,7 @@ from pyspark.sql import functions as F
 
 CATALOG = "workspace"  # Replace with your Unity Catalog name.
 SCHEMA = "graphguard"
-VOLUME = "graphguard_input"
+VOLUME = "input"
 EXPERIMENT = "/Shared/graphguard"
 
 VOLUME_PATH = f"/Volumes/{CATALOG}/{SCHEMA}/{VOLUME}/graphguard/reports"
