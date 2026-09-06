@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GraphGuard Analyzer</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #f5f5f5; margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1000px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        h1 { margin-top: 0; color: #222; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+        .form-group { margin-bottom: 20px; display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+        button { padding: 10px 20px; background-color: #0066cc; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #0055aa; }
+        button:disabled { background-color: #999; cursor: not-allowed; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 30px; }
+        .card { background: #fafafa; border: 1px solid #eee; border-radius: 6px; padding: 20px; }
+        .card h2 { margin-top: 0; font-size: 18px; color: #444; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+        .tier-CRITICAL { color: #d32f2f; font-weight: bold; }
+        .tier-HIGH { color: #ed6c02; font-weight: bold; }
+        .tier-MEDIUM { color: #ed6c02; font-weight: bold; }
+        .tier-LOW { color: #2e7d32; font-weight: bold; }
+        .evidence-list { list-style-type: none; padding: 0; }
+        .evidence-list li { padding: 10px 0; border-bottom: 1px dashed #ddd; font-size: 14px; }
+        .evidence-list li:last-child { border-bottom: none; }
+        .tag { display: inline-block; padding: 3px 8px; background: #e0e0e0; border-radius: 12px; font-size: 12px; margin-right: 8px; font-weight: bold;}
+        .test-item { margin-bottom: 15px; }
+        .test-name { font-weight: bold; font-family: monospace; font-size: 14px;}
+        .test-score { float: right; background: #e3f2fd; color: #1565c0; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+        .test-path { font-size: 13px; color: #666; margin-top: 5px; font-family: monospace; white-space: pre-wrap; }
+        #error { color: #d32f2f; margin-top: 10px; display: none; }
+        #results { display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GraphGuard Analyzer</h1>
+        <div class="form-group">
+            <input type="text" id="repo" placeholder="Repository Path (e.g. /path/to/repo)" value="/Users/tarun.n/BTW/entire-graph/graphguard/fixtures/demo-repo">
+            <input type="text" id="symbol" placeholder="Symbol Name (e.g. charge)" value="charge">
+            <button id="btn-analyze" onclick="analyze()">Analyze</button>
+        </div>
+        <div id="error"></div>
+        
+        <div id="results">
+            <div class="card" style="margin-bottom: 20px;">
+                <h2 style="border:none; margin:0; padding:0; display:flex; justify-content:space-between;">
+                    <span>Analysis for: <strong id="res-symbol"></strong></span>
+                    <span id="res-tier"></span>
+                </h2>
+                <p id="res-reason" style="margin-bottom:0; color:#555;"></p>
+            </div>
+            
+            <div class="grid">
+                <div class="card">
+                    <h2>Risk & Evidence</h2>
+                    <ul class="evidence-list" id="evidence-list">
+                    </ul>
+                </div>
+                <div class="card">
+                    <h2>Ranked Tests to Run</h2>
+                    <div id="tests-list">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function analyze() {
+            const btn = document.getElementById('btn-analyze');
+            const repo = document.getElementById('repo').value;
+            const symbol = document.getElementById('symbol').value;
+            const errorEl = document.getElementById('error');
+            const resultsEl = document.getElementById('results');
+            
+            if (!repo || !symbol) return;
+            
+            btn.disabled = true;
+            btn.innerText = 'Analyzing...';
+            errorEl.style.display = 'none';
+            resultsEl.style.display = 'none';
+            
+            try {
+                const res = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ repo, symbol })
+                });
+                
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Analysis failed');
+                
+                document.getElementById('res-symbol').innerText = data.symbol;
+                
+                const tierEl = document.getElementById('res-tier');
+                tierEl.innerText = `${data.tier} RISK (${data.rule_id})`;
+                tierEl.className = `tier-${data.tier}`;
+                
+                document.getElementById('res-reason').innerText = data.reason;
+                
+                // Evidence
+                const evList = document.getElementById('evidence-list');
+                evList.innerHTML = '';
+                data.evidence.forEach(e => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span class="tag">${e.tag}</span> <strong>${e.content}</strong><br><span style="color:#888;font-size:12px;">${e.file_line}</span>`;
+                    evList.appendChild(li);
+                });
+                
+                // Tests
+                const tsList = document.getElementById('tests-list');
+                tsList.innerHTML = '';
+                if (data.ranked_tests.length === 0) {
+                    tsList.innerHTML = '<p style="color:#888; font-style:italic;">No graph-connected tests found.</p>';
+                } else {
+                    data.ranked_tests.forEach(t => {
+                        const div = document.createElement('div');
+                        div.className = 'test-item';
+                        div.innerHTML = `
+                            <div>
+                                <span class="test-name">${t.test_name}</span>
+                                <span class="test-score">${t.score}</span>
+                            </div>
+                            <div class="test-path">${t.path}</div>
+                        `;
+                        tsList.appendChild(div);
+                    });
+                }
+                
+                resultsEl.style.display = 'block';
+            } catch (err) {
+                errorEl.innerText = err.message;
+                errorEl.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Analyze';
+            }
+        }
+    </script>
+</body>
+</html>
