@@ -2,7 +2,7 @@
 
 import json
 from pathlib import Path
-from graphguard.engine.models import NormalizedFacts
+from graphguard.engine.models import AnalysisReport, NormalizedFacts
 from graphguard.engine.normalize import normalize_impact
 from graphguard.engine.risk import classify
 from graphguard.engine.rank import rank_tests
@@ -66,3 +66,35 @@ def test_rank_tests_breaks_equal_scores_by_test_name():
     ranked = rank_tests(facts, "HIGH")
 
     assert [test.test_name for test in ranked] == ["test_alpha", "test_zebra"]
+
+
+def test_partial_impact_requires_verification_without_changing_confirmed_behavior():
+    with open(TESTDATA_DIR / "impact_partial.json") as f:
+        raw = json.load(f)
+
+    facts = normalize_impact(raw, "dynamic_charge")
+    tier, rule_id, reason = classify(facts)
+    evidence = build_evidence(
+        facts, tier, rule_id, reason,
+        ["entire graph impact --repo . --symbol dynamic_charge"],
+    )
+
+    assert facts.analysis_status == "partial"
+    assert "partial failure: E_DYNAMIC_DISPATCH" in facts.analysis_limitations
+    assert facts.direct_callers == 0
+    assert [tag.tag for tag in evidence] == [
+        "incomplete_graph_evidence", "derived", "verification_required",
+    ]
+    assert evidence[1].content.startswith("Provisional classification:")
+
+    report = AnalysisReport(
+        symbol="dynamic_charge",
+        repo="fixtures/partial-repo",
+        tier=tier,
+        rule_id=rule_id,
+        reason=reason,
+        ranked_tests=[],
+        evidence=evidence,
+        facts=facts,
+    )
+    assert "Analysis: PARTIAL" in report.render_text()

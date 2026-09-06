@@ -30,6 +30,7 @@
         .test-path { font-size: 13px; color: #666; margin-top: 5px; font-family: monospace; white-space: pre-wrap; }
         #error { color: #d32f2f; margin-top: 10px; display: none; }
         #results { display: none; }
+        #analysis-warning { display: none; margin-bottom: 20px; padding: 12px; border: 1px solid #e6a700; background: #fff7db; color: #6b4d00; border-radius: 6px; }
     </style>
 </head>
 <body>
@@ -41,6 +42,7 @@
             <button id="btn-analyze" onclick="analyze()">Analyze</button>
         </div>
         <div id="error"></div>
+        <div id="analysis-warning"></div>
         
         <div id="results">
             <div class="card" style="margin-bottom: 20px;">
@@ -73,6 +75,7 @@
             const symbol = document.getElementById('symbol').value;
             const errorEl = document.getElementById('error');
             const resultsEl = document.getElementById('results');
+            const warningEl = document.getElementById('analysis-warning');
             
             if (!repo || !symbol) return;
             
@@ -80,6 +83,7 @@
             btn.innerText = 'Analyzing...';
             errorEl.style.display = 'none';
             resultsEl.style.display = 'none';
+            warningEl.style.display = 'none';
             
             try {
                 const res = await fetch('/api/analyze', {
@@ -94,8 +98,17 @@
                 document.getElementById('res-symbol').innerText = data.symbol;
                 
                 const tierEl = document.getElementById('res-tier');
-                tierEl.innerText = `${data.tier} RISK (${data.rule_id})`;
+                const isPartial = data.facts.analysis_status === 'partial';
+                tierEl.innerText = isPartial
+                    ? `${data.tier} RISK - VERIFY (${data.rule_id})`
+                    : `${data.tier} RISK (${data.rule_id})`;
                 tierEl.className = `tier-${data.tier}`;
+
+                if (isPartial) {
+                    warningEl.innerText = `Partial graph analysis: ${data.facts.analysis_limitations.join('; ')}. ` +
+                        'Relationship counts and ranked tests require source or test verification.';
+                    warningEl.style.display = 'block';
+                }
                 
                 document.getElementById('res-reason').innerText = data.reason;
                 

@@ -32,6 +32,8 @@ class NormalizedFacts:
     file_path: str = ""
     line: int = 0
     blind_spots: list[str] = field(default_factory=list)
+    analysis_status: str = "confirmed"  # "confirmed" | "partial"
+    analysis_limitations: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return asdict(self)
@@ -130,6 +132,11 @@ class AnalysisReport:
             f"  Co-change files: {self.facts.cochange_files}",
             f"  File: {self.facts.file_path}:{self.facts.line}",
         ]
+        if self.facts.analysis_status == "partial":
+            lines.extend([
+                "  ⚠ Analysis: PARTIAL - graph relationships and recommendations require source or test verification.",
+                f"  Limitations: {', '.join(self.facts.analysis_limitations)}",
+            ])
         if self.facts.blind_spots:
             lines.append(f"  ⚠ Blind spots: {', '.join(self.facts.blind_spots)}")
 
