@@ -71,19 +71,28 @@
     <script>
         async function analyze() {
             const btn = document.getElementById('btn-analyze');
-            const repo = document.getElementById('repo').value;
-            const symbol = document.getElementById('symbol').value;
+            const repo = document.getElementById('repo').value.trim();
+            const symbol = document.getElementById('symbol').value.trim();
             const errorEl = document.getElementById('error');
             const resultsEl = document.getElementById('results');
             const warningEl = document.getElementById('analysis-warning');
             
-            if (!repo || !symbol) return;
-            
-            btn.disabled = true;
-            btn.innerText = 'Analyzing...';
             errorEl.style.display = 'none';
             resultsEl.style.display = 'none';
             warningEl.style.display = 'none';
+            if (!repo) {
+                errorEl.innerText = 'Repository path is required.';
+                errorEl.style.display = 'block';
+                return;
+            }
+            if (!symbol) {
+                errorEl.innerText = 'Symbol name is required.';
+                errorEl.style.display = 'block';
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerText = 'Analyzing...';
             
             try {
                 const res = await fetch('/api/analyze', {
