@@ -12,21 +12,30 @@ when dynamic dispatch contradicts graph-derived expectations.
 
 ## Setup
 
-1. Forked `entireio/entire-graph` → `Hiteshsai007/entire-graph`
-2. Entire India mirror: _(pending confirmation)_
-3. Cloned from mirror
-4. Checkpoints enabled (`entire status`)
-5. Graph plugin installed (`entire graph version`)
-6. `entire graph init-agents --repo .` completed
-7. Fresh agent session started
+1. GraphGuard Checkpoints 1–3 and Databricks export staging were merged into [`Hiteshsai007/entire-graph`](https://github.com/Hiteshsai007/entire-graph) `main` at [`f3196af`](https://github.com/Hiteshsai007/entire-graph/commit/f3196af).
+2. Entire India mirror: **not configured or verified in this checkout**. Do not claim that this checkout was cloned from a mirror until its URL and push are confirmed.
+3. The local GraphGuard tests were run from the repository root with the project test suite.
+4. A local Entire Graph executable is required for a live analysis; configure `entire`, `entire-graph`, or `GRAPHGUARD_ENTIRE_GRAPH_BIN`.
 
 ## Architecture
 
-See `GRAPHGAURD_CLAUDE.md` §3.
+```
+Reviewer → local FastAPI UI / CLI → GraphGuard engine
+                                  → Entire Graph impact facts
+                                  → deterministic risk + ranked tests + evidence
+```
+
+The local JSON store remains the demo source of record. No LLM assigns risk tiers.
 
 ## Graph Findings
 
-_(To be filled after Phase 1 implementation)_
+Verified against frozen `impact_charge.json` by `graphguard/tests/test_engine.py`:
+
+- `charge` is public and classifies as **HIGH** via deterministic rule `H1`.
+- The normalized facts contain one direct and one transitive caller; the direct test recommendation scores `100`.
+- `test_process_order_success` preserves the graph path through `process_order` to `charge`.
+
+These are fixture-backed unit-test findings. A live `entire graph impact` demonstration still requires an installed Entire Graph executable.
 
 ## Curveball
 
@@ -63,26 +72,30 @@ checks the incomplete-evidence and verification-required labels; the existing
 
 ## Checkpoints
 
-1. **Checkpoint 1:** Plan committed.
-2. **Checkpoint 2:** What works: analyze/verify/UI/tests. Exact demo command. Fixture outcomes actually seen (including Contradicted yes/no). Databricks not started. Do not add features after this commit.
-3. **Checkpoint 3:** Deterministic equal-score ranking tie-break in `rank.py`, proven by `test_rank_tests_breaks_equal_scores_by_test_name`.
-4. **Checkpoint 4:** _(final)_
+1. **Checkpoint 1:** [Plan committed](https://github.com/Hiteshsai007/entire-graph/commit/5eef99ebefc97b0fd664807cffcb3077733c5847).
+2. **Checkpoint 2:** [Analyze/verify/UI/tests baseline](https://github.com/Hiteshsai007/entire-graph/commit/ee48e87c5f2272a97e7e09df239ff086e41a682b).
+3. **Checkpoint 3:** [Deterministic equal-score ranking tie-break](https://github.com/Hiteshsai007/entire-graph/commit/02652f1746de852d7978da5e021022b888395ada), proven by `test_rank_tests_breaks_equal_scores_by_test_name`.
+4. **Checkpoint 4:** Release verification recorded against merged `main` [`f3196af`](https://github.com/Hiteshsai007/entire-graph/commit/f3196af): `python3 -m pytest -q graphguard/tests` → **11 passed**.
 
 ## Run Instructions
 
 ```bash
-cd graphguard
-python -m pytest -q
-python -m graphguard.cli analyze --repo fixtures/demo-repo --symbol charge
-python -m graphguard.cli serve
+python -m pip install -e "./graphguard[dev]"
+python -m pytest -q graphguard/tests
+python -m graphguard.cli analyze charge --repo graphguard/fixtures/demo-repo
+python -m uvicorn graphguard.web.app:app --host 127.0.0.1 --port 8765
 ```
+
+For a live analysis, make the Entire Graph command available as `entire`, `entire-graph`, or set `GRAPHGUARD_ENTIRE_GRAPH_BIN` before running the CLI or submitting a UI analysis.
 
 ## Databricks
 
-Not deployed.
+Export staging is merged: local GraphGuard JSON can be staged for the Databricks notebook, which materializes the four Unity Catalog tables and MLflow metrics. No Databricks workspace or app URL is configured or deployed for this release.
 
 ## Limitations
 
 - Graph cannot see `getattr`/dynamic dispatch → reported as Contradicted
 - Inventory-only languages have no semantic relations
 - Co-change data depends on git history depth in the fixture
+- The release environment used for this record has no Entire Graph executable, so the live UI/CLI analysis was not asserted here; its portable command-resolution behavior is covered by unit tests.
+- The Entire India mirror has not been configured in this checkout, so its push status cannot be confirmed.
