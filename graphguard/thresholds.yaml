@@ -1,0 +1,36 @@
+order: [CRITICAL, HIGH, MEDIUM, LOW]
+
+CRITICAL:
+  - id: C1
+    when: is_public AND direct_callers >= 3 AND reachable_tests < 2
+    reason: "public symbol with ≥3 direct callers and <2 reachable tests"
+  - id: C2
+    when: is_public AND reachable_tests == 0 AND direct_callers >= 1
+    reason: "public symbol with callers and zero reachable tests"
+
+HIGH:
+  - id: H1
+    when: is_public AND direct_callers >= 1 AND reachable_tests < 3
+    reason: "public API with callers and thin test reachability"
+  - id: H2
+    when: direct_callers >= 2 AND transitive_callers >= 1
+    reason: "≥2 direct callers and ≥1 transitive caller (depth 2)"
+  - id: H3
+    when: cochange_files >= 5 AND reachable_tests < 3
+    reason: "high co-change (≥5) with thin tests"
+
+MEDIUM:
+  - id: M1
+    when: direct_callers >= 1
+    reason: "at least one direct caller"
+  - id: M2
+    when: cochange_files >= 3
+    reason: "historical co-change ≥3 files"
+  - id: M3
+    when: reachable_tests == 0
+    reason: "no reachable tests found"
+
+LOW:
+  - id: L1
+    when: else
+    reason: "internal or well-covered, no elevated signals"
