@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+from graphguard.engine.models import NormalizedFacts
 from graphguard.engine.normalize import normalize_impact
 from graphguard.engine.risk import classify
 from graphguard.engine.rank import rank_tests
@@ -47,3 +48,16 @@ def test_health_low_risk():
     tier, rule_id, reason = classify(facts)
     assert tier == "LOW"
     assert rule_id == "L1"
+
+
+def test_rank_tests_breaks_equal_scores_by_test_name():
+    facts = NormalizedFacts(
+        symbol="charge",
+        is_public=True,
+        test_names=["test_zebra", "test_alpha"],
+        direct_caller_names=["test_zebra", "test_alpha"],
+    )
+
+    ranked = rank_tests(facts, "HIGH")
+
+    assert [test.test_name for test in ranked] == ["test_alpha", "test_zebra"]

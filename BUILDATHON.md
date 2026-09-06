@@ -30,13 +30,21 @@ _(To be filled after Phase 1 implementation)_
 
 ## Curveball
 
-_(To be filled after noon constraint)_
+Pre-edit baseline saved to `graphguard/data/pre-curveball-impact.json`: `classify`
+was ambiguous with the analyzer's Groovy scanner, while `rank_tests` has two
+direct callers and three transitive callers. The supplied `diff --head .` form
+is not supported by this CLI, so the clean pre-edit baseline records `HEAD`
+against `HEAD`.
+
+Curveball change: `graphguard/engine/rank.py` now breaks equal test scores by
+test name, keeping recommendations deterministic when graph entry order differs.
+Proving test: `test_rank_tests_breaks_equal_scores_by_test_name`.
 
 ## Checkpoints
 
 1. **Checkpoint 1:** Plan committed.
 2. **Checkpoint 2:** What works: analyze/verify/UI/tests. Exact demo command. Fixture outcomes actually seen (including Contradicted yes/no). Databricks not started. Do not add features after this commit.
-3. **Checkpoint 3:** _(post-curveball)_
+3. **Checkpoint 3:** Deterministic equal-score ranking tie-break in `rank.py`, proven by `test_rank_tests_breaks_equal_scores_by_test_name`.
 4. **Checkpoint 4:** _(final)_
 
 ## Run Instructions

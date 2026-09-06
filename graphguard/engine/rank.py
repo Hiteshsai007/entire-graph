@@ -55,6 +55,6 @@ def rank_tests(facts: NormalizedFacts, tier: str) -> list[RankedTest]:
                 ranked.append(RankedTest(test_name=test, score=10, reason="co-change with test file", path=path))
                 seen.add(test)
                 
-    # Sort by score descending (stable sort)
-    ranked.sort(key=lambda x: x.score, reverse=True)
+    # Sort by score descending, then name, so equal graph paths are deterministic.
+    ranked.sort(key=lambda x: (-x.score, x.test_name))
     return ranked
