@@ -17,6 +17,26 @@ def normalize_impact(raw: dict, symbol: str) -> NormalizedFacts:
         file_path=file_path,
         line=focus.get("start_line", 0),
     )
+
+    # Entire Graph makes incomplete analysis machine-readable. Preserve that
+    # signal instead of presenting relationship-derived output as authoritative.
+    partial_failures = raw.get("partial_failures", [])
+    for failure in partial_failures:
+        code = failure.get("code", "partial failure") if isinstance(failure, dict) else str(failure)
+        facts.analysis_limitations.append(f"partial failure: {code}")
+
+    stats = raw.get("stats", {})
+    completeness_level = stats.get("completeness_level")
+    if completeness_level and completeness_level != "ok":
+        facts.analysis_limitations.append(f"completeness level: {completeness_level}")
+
+    scope = raw.get("completeness_scope", {})
+    scope_level = scope.get("level")
+    if scope_level and scope_level != "ok":
+        facts.analysis_limitations.append(f"scope level: {scope_level}")
+
+    if facts.analysis_limitations:
+        facts.analysis_status = "partial"
     
     callers = raw.get("callers", {})
     

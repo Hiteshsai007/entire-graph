@@ -1,0 +1,21 @@
+{
+  "focus": {
+    "name": "dynamic_charge",
+    "file_path": "payments/dynamic.py",
+    "start_line": 12,
+    "language": "Python"
+  },
+  "callers": {"entries": []},
+  "callees": {"entries": []},
+  "type_consumers": {"entries": []},
+  "co_changes": {"total": 0, "entries": []},
+  "siblings": {"entries": []},
+  "partial_failures": [
+    {
+      "code": "E_DYNAMIC_DISPATCH",
+      "message": "Call target could not be resolved because it is selected dynamically."
+    }
+  ],
+  "stats": {"completeness_level": "partial"},
+  "completeness_scope": {"level": "partial"}
+}
